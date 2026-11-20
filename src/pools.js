@@ -11,5 +11,12 @@ export const PLAYERS = [
     "Taliyah", "Taric", "Teemo", "Tristana", "Tryndamere", "Twisted Fate", "Veigar", "Vex", "Warwick", "Xin Zhao",
     "Yone", "Zoe",
   ] },
-  { name: "Kretons", champs: null },
+  { name: "Kretons", champs: [
+    "Gragas", "Tristana", "Master Yi", "Talon", "Thresh", "Malphite", "Azir", "Yasuo", "Bard", "Jax",
+    "Ezreal", "Kindred", "Brand", "Ryze", "Evelynn", "Vayne", "Rakan", "Nasus", "Nunu & Willump", "Renekton",
+    "Darius", "Jayce", "Akali", "Miss Fortune", "Vladimir", "Aphelios", "Alistar", "Rengar", "Jhin", "Shaco",
+    "Lux", "Ahri", "Twitch", "Ashe", "Draven", "Amumu", "Cho'Gath", "Yuumi", "Briar", "Kai'Sa",
+    "Caitlyn", "Riven", "Annie", "Ekko", "Gwen", "Irelia", "Katarina", "Locke", "Naafiri", "Singed",
+    "Sylas", "Teemo", "Viego", "Yone",
+  ] },
 ];
