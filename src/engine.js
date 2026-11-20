@@ -204,35 +204,81 @@ export const SP = {
 };
 export const SPELLKEYS = Object.keys(SP);
 
+// Níveis de troll. O 0 usa as picks off meta dos sites (modo "off").
+export const LEVELS = [
+  {n:"Sério", d:"Picks off meta tiradas de sites. Build pronta e jogável."},
+  {n:"Leve", d:"Campeão na rota dele e build fora do comum que ainda funciona."},
+  {n:"Troll", d:"Build arriscada, segundo feitiço e runa no sorteio."},
+  {n:"Caos", d:"Qualquer campeão em qualquer rota. Itens, feitiços e runas às cegas."}
+];
+
+// Runas: o engine sorteia uma "receita" e o ddragon.jsx resolve nomes e ícones com os dados da Riot.
+export const TREES = [8000, 8100, 8200, 8300, 8400]; // Precisão, Dominação, Feitiçaria, Inspiração, Determinação
+export const KS_TREE = {
+  conqueror:8000, lethaltempo:8000, pressthe:8000, fleet:8000,
+  electrocute:8100, darkharvest:8100, hailofblades:8100,
+  aery:8200, comet:8200, phaserush:8200,
+  glacial:8300, spellbook:8300, firststrike:8300,
+  grasp:8400, aftershock:8400, guardian:8400
+};
+const KS_FIT = {
+  T:{a:["conqueror","grasp","phaserush"],p:["grasp","phaserush","comet","conqueror"],h:["grasp","aftershock","conqueror"]},
+  J:{a:["conqueror","electrocute","darkharvest","lethaltempo"],p:["electrocute","darkharvest","phaserush","conqueror"],h:["aftershock","grasp","phaserush"]},
+  M:{a:["electrocute","conqueror","firststrike"],p:["electrocute","comet","phaserush","darkharvest","firststrike"],h:["comet","electrocute","firststrike"]},
+  A:{a:["lethaltempo","pressthe","fleet","hailofblades"],p:["comet","firststrike","phaserush"],h:["lethaltempo","pressthe","fleet"]},
+  S:{a:["electrocute","hailofblades","aftershock"],p:["aery","comet","guardian","electrocute"],h:["aftershock","guardian","glacial"]}
+};
+export const SHARDS = [
+  ["Força adaptativa","Velocidade de ataque","Aceleração de habilidade"],
+  ["Força adaptativa","Velocidade de movimento","Vida por nível"],
+  ["Vida","Tenacidade e resist. a lentidão","Vida por nível"]
+];
+
+export function genRunes(c, role, L, ks){
+  const dmg = c ? c.d : "h";
+  const sane = L <= 1 || (L === 2 && Math.random() < 0.5);
+  const key = ks || (L === 3 ? null : sane ? pick(KS_FIT[role][dmg]) : pick(Object.keys(KS_TREE)));
+  const rows = shuffle([1,2,3]).slice(0,2).sort();
+  let shards;
+  if (L === 3) shards = [rnd(3), rnd(3), rnd(3)];
+  else {
+    const s1 = role === "A" && dmg !== "p" && Math.random() < 0.6 ? 1 : Math.random() < 0.2 ? 2 : 0;
+    const s2 = Math.random() < 0.15 ? 1 : 0;
+    const s3 = "TJS".includes(role) && Math.random() < 0.35 ? 1 : 0;
+    shards = [s1, s2, s3];
+  }
+  return { ks:key, t:Math.random(), r:[Math.random(),Math.random(),Math.random(),Math.random()], s:Math.random(), sRows:rows, sR:[Math.random(),Math.random()], shards };
+}
+
 export const THEMES = [
-  {n:"Bruiser Ameaça",d:"Dano e vida juntos. Bate, aguenta e não morre na luta longa.",lvl:1,dmg:"ad",core:["Black Cleaver","Sterak's Gage"],flex:["Death's Dance","Maw of Malmortius","Spirit Visage","Guardian Angel","Thornmail","Sundered Sky","Eclipse"],boots:["Plated Steelcaps","Mercury's Treads"]},
-  {n:"Tanque que Queima",d:"Parede de vida que ainda causa dano em área. Ninguém entende como você morre tão pouco.",lvl:1,dmg:"any",core:["Sunfire Aegis","Iceborn Gauntlet"],flex:["Spirit Visage","Thornmail","Warmog's Armor","Force of Nature","Jak'Sho, The Protean","Heartsteel","Kaenic Rookern"],boots:["Plated Steelcaps","Mercury's Treads"]},
-  {n:"Mago Gordão",d:"AP com muita vida. Aguenta o all-in e ainda devolve o dano.",lvl:1,dmg:"ap",core:["Rod of Ages","Liandry's Torment"],flex:["Riftmaker","Warmog's Armor","Demonic Embrace","Zhonya's Hourglass","Spirit Visage","Cryptbloom"],boots:["Sorcerer's Shoes","Mercury's Treads"]},
-  {n:"Fã de Hydra",d:"Só Hydra e cura. Limpa a wave inteira em um golpe.",lvl:1,dmg:"ad",core:["Ravenous Hydra","Titanic Hydra"],flex:["Sterak's Gage","Death's Dance","Stridebreaker","Black Cleaver","Maw of Malmortius","Guardian Angel"],boots:["Plated Steelcaps","Boots of Swiftness"]},
-  {n:"Crit pra Todo Lado",d:"Crítico em tudo, até em quem não devia. Dano absurdo se o alvo ficar parado.",lvl:1,dmg:"ad",core:["Infinity Edge","Navori Flickerblade"],flex:["Phantom Dancer","Rapid Firecannon","Lord Dominik's Regards","Bloodthirster","Mortal Reminder","Immortal Shieldbow"],boots:["Berserker's Greaves"]},
-  {n:"Fura-Tank AD",d:"Item contra tanque desde o primeiro recall. O time inimigo vai ficar sem armadura.",lvl:1,dmg:"ad",core:["Lord Dominik's Regards","Serylda's Grudge"],flex:["Black Cleaver","Mortal Reminder","Terminus","Sundered Sky","Hullbreaker"],boots:["Berserker's Greaves","Plated Steelcaps"]},
-  {n:"Fura-Tank AP",d:"Penetração mágica pra derreter time cheio de resistência.",lvl:1,dmg:"ap",core:["Void Staff","Liandry's Torment"],flex:["Cryptbloom","Malignance","Rabadon's Deathcap","Zhonya's Hourglass","Shadowflame","Rylai's Crystal Scepter"],boots:["Sorcerer's Shoes"]},
-  {n:"Sanguessuga",d:"Lifesteal de cima a baixo. Quanto mais bate, mais vive.",lvl:2,dmg:"ad",core:["Bloodthirster","Immortal Shieldbow"],flex:["Death's Dance","Sterak's Gage","Maw of Malmortius","Edge of Night","Hullbreaker","Spirit Visage"],boots:["Plated Steelcaps","Berserker's Greaves"]},
-  {n:"On-Hit pra Todo Mundo",d:"Qualquer campeão vira auto-ataque com efeito. Surpresa total no meio da luta.",lvl:2,dmg:"any",core:["Nashor's Tooth","Wit's End"],flex:["Blade of the Ruined King","Kraken Slayer","Terminus","Guinsoo's Rageblade","Rabadon's Deathcap","Runaan's Hurricane"],boots:["Berserker's Greaves","Mercury's Treads"]},
-  {n:"Item de Suporte no Carry",d:"Escudo, cura e aura em quem não é suporte. O time inteiro agradece.",lvl:2,dmg:"any",core:["Moonstone Renewer","Ardent Censer"],flex:["Staff of Flowing Water","Redemption","Mikael's Blessing","Shurelya's Battlesong","Imperial Mandate","Locket of the Iron Solari","Zeke's Convergence"],boots:["Ionian Boots of Lucidity","Mercury's Treads"]},
-  {n:"Muralha de Gelo",d:"Frozen Heart e amigos. Ataque inimigo vira cócega e a lane inteira fica lenta.",lvl:2,dmg:"any",core:["Frozen Heart","Randuin's Omen"],flex:["Sunfire Aegis","Abyssal Mask","Hollow Radiance","Zeke's Convergence","Kaenic Rookern","Fimbulwinter"],boots:["Plated Steelcaps","Ionian Boots of Lucidity"]},
-  {n:"Rei do Espinho",d:"Quanto mais batem em você, mais dói neles. Perfeito contra time de AD.",lvl:2,dmg:"any",core:["Thornmail","Randuin's Omen"],flex:["Sunfire Aegis","Frozen Heart","Dead Man's Plate","Spirit Visage","Warmog's Armor","Gargoyle Stoneplate"],boots:["Plated Steelcaps"]},
-  {n:"AD com Lich Bane",d:"Golpe depois da habilidade em campeão AD. Combo curto que dói de verdade.",lvl:2,dmg:"ad",core:["Lich Bane","Trinity Force"],flex:["Black Cleaver","Sterak's Gage","Spirit Visage","Sunfire Aegis","Hullbreaker","Guardian Angel"],boots:["Mercury's Treads","Boots of Swiftness"]},
-  {n:"Mejai Cinema",d:"Mejai logo no primeiro recall. Se snowballar, ninguém para. Se morrer, vira meme. Regra do grupo: sem culpa.",lvl:3,dmg:"ap",core:["Mejai's Soulstealer","Zhonya's Hourglass","Rabadon's Deathcap"],flex:["Banshee's Veil","Void Staff","Seraph's Embrace","Shadowflame"],boots:["Sorcerer's Shoes"]}
+  {n:"Bruiser Ameaça",d:"Dano e vida. Ganha qualquer luta longa.",lvl:1,dmg:"ad",core:["Black Cleaver","Sterak's Gage"],flex:["Death's Dance","Maw of Malmortius","Spirit Visage","Guardian Angel","Thornmail","Sundered Sky","Eclipse"],boots:["Plated Steelcaps","Mercury's Treads"]},
+  {n:"Tanque que Queima",d:"Muita vida e dano em área só de ficar perto.",lvl:1,dmg:"any",core:["Sunfire Aegis","Iceborn Gauntlet"],flex:["Spirit Visage","Thornmail","Warmog's Armor","Force of Nature","Jak'Sho, The Protean","Heartsteel","Kaenic Rookern"],boots:["Plated Steelcaps","Mercury's Treads"]},
+  {n:"Mago Gordão",d:"AP com vida. Aguenta o all-in e devolve.",lvl:1,dmg:"ap",core:["Rod of Ages","Liandry's Torment"],flex:["Riftmaker","Warmog's Armor","Demonic Embrace","Zhonya's Hourglass","Spirit Visage","Cryptbloom"],boots:["Sorcerer's Shoes","Mercury's Treads"]},
+  {n:"Fã de Hydra",d:"Só Hydra. Limpa a wave num golpe.",lvl:1,dmg:"ad",core:["Ravenous Hydra","Titanic Hydra"],flex:["Sterak's Gage","Death's Dance","Stridebreaker","Black Cleaver","Maw of Malmortius","Guardian Angel"],boots:["Plated Steelcaps","Boots of Swiftness"]},
+  {n:"Crit pra Todo Lado",d:"Crítico em qualquer campeão, sirva ou não.",lvl:1,dmg:"ad",core:["Infinity Edge","Navori Flickerblade"],flex:["Phantom Dancer","Rapid Firecannon","Lord Dominik's Regards","Bloodthirster","Mortal Reminder","Immortal Shieldbow"],boots:["Berserker's Greaves"]},
+  {n:"Fura-Tank AD",d:"Penetração de armadura desde o primeiro recall.",lvl:1,dmg:"ad",core:["Lord Dominik's Regards","Serylda's Grudge"],flex:["Black Cleaver","Mortal Reminder","Terminus","Sundered Sky","Hullbreaker"],boots:["Berserker's Greaves","Plated Steelcaps"]},
+  {n:"Fura-Tank AP",d:"Penetração mágica contra time tanque.",lvl:1,dmg:"ap",core:["Void Staff","Liandry's Torment"],flex:["Cryptbloom","Malignance","Rabadon's Deathcap","Zhonya's Hourglass","Shadowflame","Rylai's Crystal Scepter"],boots:["Sorcerer's Shoes"]},
+  {n:"Sanguessuga",d:"Roubo de vida em tudo.",lvl:2,dmg:"ad",core:["Bloodthirster","Immortal Shieldbow"],flex:["Death's Dance","Sterak's Gage","Maw of Malmortius","Edge of Night","Hullbreaker","Spirit Visage"],boots:["Plated Steelcaps","Berserker's Greaves"]},
+  {n:"On-Hit pra Todo Mundo",d:"Auto-ataque com efeito em qualquer campeão.",lvl:2,dmg:"any",core:["Nashor's Tooth","Wit's End"],flex:["Blade of the Ruined King","Kraken Slayer","Terminus","Guinsoo's Rageblade","Rabadon's Deathcap","Runaan's Hurricane"],boots:["Berserker's Greaves","Mercury's Treads"]},
+  {n:"Item de Suporte no Carry",d:"Escudo, cura e aura em quem não é suporte.",lvl:2,dmg:"any",core:["Moonstone Renewer","Ardent Censer"],flex:["Staff of Flowing Water","Redemption","Mikael's Blessing","Shurelya's Battlesong","Imperial Mandate","Locket of the Iron Solari","Zeke's Convergence"],boots:["Ionian Boots of Lucidity","Mercury's Treads"]},
+  {n:"Muralha de Gelo",d:"Lentidão no ataque inimigo e em área.",lvl:2,dmg:"any",core:["Frozen Heart","Randuin's Omen"],flex:["Sunfire Aegis","Abyssal Mask","Hollow Radiance","Zeke's Convergence","Kaenic Rookern","Fimbulwinter"],boots:["Plated Steelcaps","Ionian Boots of Lucidity"]},
+  {n:"Rei do Espinho",d:"Quem bate em você se machuca. Bom contra time AD.",lvl:2,dmg:"any",core:["Thornmail","Randuin's Omen"],flex:["Sunfire Aegis","Frozen Heart","Dead Man's Plate","Spirit Visage","Warmog's Armor","Gargoyle Stoneplate"],boots:["Plated Steelcaps"]},
+  {n:"AD com Lich Bane",d:"Habilidade, auto-ataque, explode. Em campeão AD.",lvl:2,dmg:"ad",core:["Lich Bane","Trinity Force"],flex:["Black Cleaver","Sterak's Gage","Spirit Visage","Sunfire Aegis","Hullbreaker","Guardian Angel"],boots:["Mercury's Treads","Boots of Swiftness"]},
+  {n:"Mejai Cinema",d:"Mejai no primeiro recall. Morreu, perdeu os acúmulos.",lvl:3,dmg:"ap",core:["Mejai's Soulstealer","Zhonya's Hourglass","Rabadon's Deathcap"],flex:["Banshee's Veil","Void Staff","Seraph's Embrace","Shadowflame"],boots:["Sorcerer's Shoes"]}
 ];
 
 export const OFF = [
-  {champ:"Ivern",role:"T",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",title:"Ivern Top Curandeiro",note:"Tanque que dá escudo e cura pro trio inteiro. Runas da fonte: Summon Aery e Transcendence.",items:["Ionian Boots of Lucidity","Moonstone Renewer","Staff of Flowing Water","Redemption","Mikael's Blessing","Zeke's Convergence"],spells:["flash","tp"]},
+  {champ:"Ivern",role:"T",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",ks:"aery",title:"Ivern Top Curandeiro",note:"Escudo e cura pro trio inteiro. Runa da fonte: Invocar Aery.",items:["Ionian Boots of Lucidity","Moonstone Renewer","Staff of Flowing Water","Redemption","Mikael's Blessing","Zeke's Convergence"],spells:["flash","tp"]},
   {champ:"Ivern",role:"J",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/?p=43449",title:"Ivern Selva Jardineiro",note:"Pick rara na selva, com taxa de vitória acima de 51% nos dados citados pela fonte.",items:["Ionian Boots of Lucidity","Moonstone Renewer","Staff of Flowing Water","Redemption","Mikael's Blessing","Locket of the Iron Solari"],spells:["smite","flash"]},
-  {champ:"Udyr",role:"J",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",title:"Udyr Tanque Fugitivo",note:"Selva de tanque com velocidade e resistência. Runa da fonte: Phase Rush.",items:["Mercury's Treads","Sunfire Aegis","Force of Nature","Dead Man's Plate","Thornmail","Spirit Visage"],spells:["smite","flash"]},
-  {champ:"Viego",role:"M",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",title:"Viego Meio Possessivo",note:"Viego no meio com build de duelista. Runa da fonte: Conqueror.",items:["Berserker's Greaves","Blade of the Ruined King","Sundered Sky","Sterak's Gage","The Collector","Guardian Angel"],spells:["flash","ignite"]},
-  {champ:"Yasuo",role:"A",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",title:"Yasuo ADC Ventania",note:"Precisa de suporte que levanta inimigo (Alistar, Malphite, Rakan). Runa da fonte: Conqueror.",items:["Berserker's Greaves","Immortal Shieldbow","Infinity Edge","Phantom Dancer","Mortal Reminder","Guardian Angel"],spells:["flash","heal"]},
-  {champ:"Poppy",role:"S",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",title:"Poppy Suporte Muralha",note:"Segura o ADC inimigo longe e protege o seu. Runa da fonte: Aftershock.",items:["Plated Steelcaps","Locket of the Iron Solari","Knight's Vow","Dead Man's Plate","Thornmail","Randuin's Omen"],spells:["flash","exhaust"]},
+  {champ:"Udyr",role:"J",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",ks:"phaserush",title:"Udyr Tanque Fugitivo",note:"Selva de tanque com velocidade e resistência. Runa da fonte: Avanço da Tempestade.",items:["Mercury's Treads","Sunfire Aegis","Force of Nature","Dead Man's Plate","Thornmail","Spirit Visage"],spells:["smite","flash"]},
+  {champ:"Viego",role:"M",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",ks:"conqueror",title:"Viego Meio Possessivo",note:"Viego no meio com build de duelista. Runa da fonte: Conquistador.",items:["Berserker's Greaves","Blade of the Ruined King","Sundered Sky","Sterak's Gage","The Collector","Guardian Angel"],spells:["flash","ignite"]},
+  {champ:"Yasuo",role:"A",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",ks:"conqueror",title:"Yasuo ADC Ventania",note:"Precisa de suporte que levanta inimigo (Alistar, Malphite, Rakan). Runa da fonte: Conquistador.",items:["Berserker's Greaves","Immortal Shieldbow","Infinity Edge","Phantom Dancer","Mortal Reminder","Guardian Angel"],spells:["flash","heal"]},
+  {champ:"Poppy",role:"S",src:"Sportskeeda",url:"https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11",ks:"aftershock",title:"Poppy Suporte Muralha",note:"Segura o ADC inimigo longe e protege o seu. Runa da fonte: Pós-choque.",items:["Plated Steelcaps","Locket of the Iron Solari","Knight's Vow","Dead Man's Plate","Thornmail","Randuin's Omen"],spells:["flash","exhaust"]},
   {champ:"Malzahar",role:"S",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-supports-in-lol/",title:"Malzahar Suporte Void",note:"Vermes limpam a wave e a ult segura o alvo pra o trio matar.",items:["Ionian Boots of Lucidity","Liandry's Torment","Cosmic Drive","Zhonya's Hourglass","Morellonomicon","Rabadon's Deathcap"],spells:["flash","ignite"]},
   {champ:"Sion",role:"S",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-supports-in-lol/",title:"Sion Suporte Engage",note:"Q carregado em luta vira engage. Tanque que não cai.",items:["Mercury's Treads","Sunfire Aegis","Warmog's Armor","Spirit Visage","Thornmail","Randuin's Omen"],spells:["flash","ignite"]},
   {champ:"Pantheon",role:"S",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-supports-in-lol/",title:"Pantheon Suporte Lança",note:"Stun cedo, rotação rápida e dano de sobra. Precisa de mão.",items:["Ionian Boots of Lucidity","Sundered Sky","Black Cleaver","Sterak's Gage","Death's Dance","Guardian Angel"],spells:["flash","ignite"]},
   {champ:"Annie",role:"S",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-supports-in-lol/",title:"Annie Suporte Stun",note:"Stun pronto vira engage, mas é frágil. Jogue colado no ADC.",items:["Sorcerer's Shoes","Luden's Companion","Shadowflame","Zhonya's Hourglass","Rabadon's Deathcap","Void Staff"],spells:["flash","ignite"]},
-  {champ:"Draven",role:"A",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-adcs-in-lol/",title:"Draven Show do Bronze",note:"A fonte cita Dravens 20-0 comuns no Bronze e Prata. Machado no chão, kill no bolso.",items:["Berserker's Greaves","Infinity Edge","Bloodthirster","Phantom Dancer","Lord Dominik's Regards","Immortal Shieldbow"],spells:["flash","heal"]},
+  {champ:"Draven",role:"A",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-adcs-in-lol/",title:"Draven Show do Bronze",note:"A fonte cita Dravens 20-0 comuns no Bronze e na Prata.",items:["Berserker's Greaves","Infinity Edge","Bloodthirster","Phantom Dancer","Lord Dominik's Regards","Immortal Shieldbow"],spells:["flash","heal"]},
   {champ:"Kalista",role:"A",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-adc-in-lol/",title:"Kalista Pula-Pula",note:"Mecanicamente difícil, mas rende muito com suporte de engage (Rell, Thresh).",items:["Berserker's Greaves","Blade of the Ruined King","Kraken Slayer","Runaan's Hurricane","Infinity Edge","Guardian Angel"],spells:["flash","heal"]},
   {champ:"Brand",role:"A",src:"NerfPlz",url:"https://www.nerfplz.com/2026/09/weird-pick-168-bot-lane-brand.html",title:"Brand Bot Lane em Chamas",note:"Pick estranha da fonte, boa com suporte que protege. Dano em área contínuo.",items:["Sorcerer's Shoes","Luden's Companion","Shadowflame","Zhonya's Hourglass","Rabadon's Deathcap","Void Staff"],spells:["flash","ignite"]},
   {champ:"Neeko",role:"A",src:"High Ground Gaming",url:"https://www.highgroundgaming.com/best-off-meta-supports-in-lol/",title:"Neeko ADC Camaleoa",note:"Maximize o dano sem roubar todo kill do time. Disfarce e stun em área.",items:["Sorcerer's Shoes","Luden's Companion","Shadowflame","Zhonya's Hourglass","Rabadon's Deathcap","Void Staff"],spells:["flash","ignite"]},
@@ -244,19 +290,21 @@ export const OFF = [
   {champ:"Shyvana",role:"J",src:"MobaFire",url:"https://www.mobafire.com/league-of-legends/build/troll-builds-just-4-fun-mostly-viable-229063",title:"Shyvana Lich Bane",note:"Guia troll da fonte: o Lich Bane combina com o golpe da Shyvana. Item pode ter mudado.",items:["Mercury's Treads","Lich Bane","Sunfire Aegis","Black Cleaver","Sterak's Gage","Thornmail"],spells:["smite","flash"]}
 ];
 
+// lvl = nível de troll mínimo pra o desafio aparecer
 export const CHALLENGES = [
-  "Primeiro a morrer paga o lanche da próxima rodada.",
-  "Antes de começar, cada um fala a build em voz alta. Quem esquecer um item paga uma prenda.",
-  "Os 3 rotacionam juntos pro mesmo objetivo toda vez que o Dragão estiver perto de nascer.",
-  "Sem flame no chat: quem xingar perde um ponto. Quem tiver mais pontos no final é o MVP.",
-  "Se um perder a lane, os outros dois ajudam sem reclamar.",
-  "Barão só quando os 3 estiverem vivos.",
-  "Cada um coloca uma ward antes de dar recall. Quem esquecer dá a última ward.",
-  "Primeiro abate do jogo: todos comemoram no chat com a mesma frase combinada.",
-  "Pelo menos um dos três pinga os itens do outro quando a build estiver ruim e todos riem.",
-  "Quem fizer o primeiro abate escolhe a música da próxima partida.",
-  "Se perder a primeira torre, o trio troca de lane e tenta de novo.",
-  "No nível 6, os 3 tentam um combo juntos pelo menos uma vez."
+  {t:"Primeiro a morrer paga o lanche.",lvl:0},
+  {t:"Antes da partida, cada um fala a build em voz alta. Errou um item, paga prenda.",lvl:0},
+  {t:"Dragão nascendo: os três vão juntos, sempre.",lvl:0},
+  {t:"Xingou no chat, perde um ponto. Quem terminar com mais pontos é o MVP.",lvl:0},
+  {t:"Barão só com os três vivos.",lvl:0},
+  {t:"Ward antes de cada recall. Esqueceu, compra Sentinela de Controle pro trio.",lvl:0},
+  {t:"Quem fizer o primeiro abate escolhe a música da próxima.",lvl:0},
+  {t:"No nível 6, combo de ult dos três juntos pelo menos uma vez.",lvl:1},
+  {t:"Perdeu a primeira torre, o trio troca de lane.",lvl:1},
+  {t:"Recall só junto. Um volta pra base, os três voltam.",lvl:2},
+  {t:"Flash só pra entrar na luta, nunca pra fugir.",lvl:2},
+  {t:"Ninguém compra a bota antes do segundo item.",lvl:3},
+  {t:"Toda luta começa com os três dando ping de ataque no mesmo alvo.",lvl:3}
 ];
 
 export const rnd = n => Math.floor(Math.random()*n);
@@ -275,7 +323,7 @@ export function genSkill(){ return shuffle(["Q","W","E"]).join(" > "); }
 export function chaosBuild(){
   const items = shuffle(NONBOOT).slice(0,5);
   items.splice(1,0,pick(POOL.bt));
-  return { items, theme:{ n:"Caos Total", d:"Cinco itens sorteados sem critério. Se funcionar, foi sorte. Se não funcionar, foi história." } };
+  return { items, theme:{ n:"Caos Total", d:"Cinco itens aleatórios e uma bota." } };
 }
 
 export function genBuild(c){
@@ -315,7 +363,7 @@ export function genTroll(role, used){
   if (!cands.length) cands = CH.filter(c => !used.has(c.n));
   const c = pick(cands);
   const b = genBuild(c);
-  return { champ:c.n, role:role, dmg:c.d, items:b.items, theme:b.theme, spells:genSpells(role), skill:genSkill(), troll:L, off:false };
+  return { champ:c.n, role:role, dmg:c.d, items:b.items, theme:b.theme, spells:genSpells(role), runes:genRunes(c, role, L), skill:genSkill(), troll:L, off:false };
 }
 
 export function genOff(role, used){
@@ -323,7 +371,7 @@ export function genOff(role, used){
   if (!c.length) c = OFF.filter(e => !used.has(e.champ));
   const e = pick(c);
   const ch = CHBY[e.champ];
-  return { champ:e.champ, role:e.role, dmg:ch ? ch.d : "h", items:e.items, theme:{ n:e.title, d:e.note }, spells:e.spells, skill:"", src:e.src, url:e.url, troll:0, off:true };
+  return { champ:e.champ, role:e.role, dmg:ch ? ch.d : "h", items:e.items, theme:{ n:e.title, d:e.note }, spells:e.spells, runes:genRunes(ch, e.role, 0, e.ks), skill:"", src:e.src, url:e.url, troll:0, off:true };
 }
 
 export function gen(role, used){ return S.mode === "off" ? genOff(role, used) : genTroll(role, used); }
@@ -331,8 +379,4 @@ export function regenBuild(res){
   const c = CHBY[res.champ];
   const b = genBuild(c);
   res.items = b.items; res.theme = b.theme; res.skill = genSkill(); res.troll = S.level;
-}
-export function newChallenge(){
-  let n; do { n = pick(CHALLENGES); } while (n === S.challenge && CHALLENGES.length > 1);
-  S.challenge = n; return n;
 }

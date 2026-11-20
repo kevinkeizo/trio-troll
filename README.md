@@ -1,6 +1,11 @@
 # Trio Troll
 
-Sorteador de campeão, build e feitiços de LoL para o trio (React + Vite).
+Sorteio de campeão, runas, build e feitiços de LoL para o trio (React + Vite).
+
+Versão web: https://kevinkeizo.github.io/trio-troll/ (atualiza sozinha a cada push na `main`).
+
+Níveis de troll: 0 Sério (picks off meta dos sites), 1 Leve, 2 Troll, 3 Caos. Os sons são gerados
+no navegador (`src/sfx.js`) e podem ser desligados no botão do canto superior.
 
 ## Rodar
 
@@ -29,5 +34,4 @@ Abra o endereço que o terminal mostrar (normalmente http://localhost:5173).
 
 - Importar a build no LoL: app local em que os 3 logam na mesma sessão/party, e a build sorteada
   (itens na ordem + runas) é enviada para o cliente como item set / página de runas.
-  Falta definir: como obter as runas de cada pick (hoje o engine só sorteia itens e feitiços) e a ponte com o cliente (LCU).
-- Adicionar runas ao sorteio (keystone + árvores) tanto no modo troll quanto no off meta.
+  As runas já são sorteadas (`genRunes` em `src/engine.js`, resolvidas pelo `src/ddragon.jsx`); falta a ponte com o cliente (LCU).
