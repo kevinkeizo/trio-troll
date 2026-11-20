@@ -80,6 +80,7 @@ Lee Sin|J|a
 Leona|S|h
 Lillia|J|p
 Lissandra|M|p
+Locke|MJ|a
 Lucian|ATM|a
 Lulu|S|p
 Lux|SM|p
@@ -170,6 +171,7 @@ Yone|MT|a
 Yorick|T|h
 Yunara|A|a
 Yuumi|S|p
+Zaahen|TJ|a
 Zac|J|h
 Zed|M|a
 Zeri|A|a
