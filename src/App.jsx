@@ -6,6 +6,7 @@ import {
 import { DataDragonProvider, useDD } from "./ddragon.jsx";
 import PlayerCard from "./PlayerCard.jsx";
 import { sfx, isMuted, setMuted } from "./sfx.js";
+import { PLAYERS } from "./pools.js";
 
 const SOURCES = [
   ["Sportskeeda", "https://www.sportskeeda.com/esports/top-5-off-meta-picks-builds-exploit-league-legends-season-11", "Ivern, Udyr, Viego, Yasuo, Poppy"],
@@ -22,9 +23,17 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ok */ } },
 };
 
+// Pool de campeões de cada vaga (null = todos). Nomes desconhecidos são avisados no console.
+const POOLS = PLAYERS.map((pl) => {
+  if (!Array.isArray(pl.champs) || !pl.champs.length) return null;
+  const bad = pl.champs.filter((n) => !CHBY[n]);
+  if (bad.length) console.warn(`Campeões não reconhecidos no pool de ${pl.name}:`, bad);
+  return new Set(pl.champs.filter((n) => CHBY[n]));
+});
+
 const loadNames = () => {
-  const base = ["Zebra", "Amigo 1", "Amigo 2"];
-  const s = store.get("trio-names", null);
+  const base = PLAYERS.map((pl) => pl.name);
+  const s = store.get("trio-names-v2", null);
   if (Array.isArray(s)) return base.map((n, i) => (typeof s[i] === "string" && s[i].trim() ? s[i].slice(0, 20) : n));
   return base;
 };
@@ -79,7 +88,7 @@ function Main() {
   const L = cfg.level;
 
   const say = (m) => { setToast(m); clearTimeout(toastT.current); toastT.current = setTimeout(() => setToast(""), 1800); };
-  useEffect(() => { store.set("trio-names", players.map((p) => p.name)); }, [players]);
+  useEffect(() => { store.set("trio-names-v2", players.map((p) => p.name)); }, [players]);
   useEffect(() => { store.set("trio-cfg", cfg); }, [cfg]);
 
   // O engine lê as regras do objeto S.
@@ -107,7 +116,7 @@ function Main() {
     const used = new Set(players.filter((p) => p.locked && p.res).map((p) => p.res.champ));
     setPlayers(players.map((p, i) => {
       if (p.locked && p.res) return p;
-      const res = newRoll(gen(finalRoles[i], used));
+      const res = newRoll(gen(finalRoles[i], used, POOLS[i]));
       used.add(res.champ);
       return { ...p, res };
     }));
@@ -141,7 +150,7 @@ function Main() {
         const free = ROLEKEYS.filter((r) => !taken.has(r));
         role = pick(free.length ? free : ROLEKEYS);
       }
-      patch(i, (q) => ({ ...q, res: newRoll(gen(role, used)) }));
+      patch(i, (q) => ({ ...q, res: newRoll(gen(role, used, POOLS[i])) }));
       return;
     }
     sfx.swap();
@@ -251,7 +260,7 @@ function Main() {
       <div className="cards">
         {players.map((p, i) => (
           <PlayerCard
-            key={i} i={i} p={p} level={L}
+            key={i} i={i} p={p} level={L} poolSize={POOLS[i] ? POOLS[i].size : 0}
             onName={(v) => patch(i, (q) => ({ ...q, name: v }))}
             onRole={(k) => { sfx.click(); patch(i, (q) => ({ ...q, roleSel: k })); }}
             onLock={() => {

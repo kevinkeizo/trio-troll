@@ -114,7 +114,7 @@ const Meter = ({ l }) => (
   </span>
 );
 
-export default function PlayerCard({ i, p, level, onName, onRole, onLock, onReroll }) {
+export default function PlayerCard({ i, p, level, poolSize, onName, onRole, onLock, onReroll }) {
   const dd = useDD();
   const r = p.res;
   const [spin, setSpin] = useState(null);
@@ -231,6 +231,8 @@ export default function PlayerCard({ i, p, level, onName, onRole, onLock, onRero
               </div>
             </>
           )}
+
+          {poolSize > 0 && <div className="pool">Sorteando entre <b>{poolSize}</b> campeões da conta</div>}
 
           <div className="actions">
             <button onClick={() => onReroll("all")}>Outro campeão</button>

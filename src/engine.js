@@ -356,25 +356,32 @@ export function genSpells(role){
   return ["flash", second];
 }
 
-export function genTroll(role, used){
+// pool: Set com os campeões do jogador (ou null = todos). Se o pool não tiver ninguém pra rota, ignora a rota;
+// se nem assim sobrar ninguém, usa a lista inteira.
+export function genTroll(role, used, pool){
   const L = S.level;
   const loose = L === 3 || S.loose;
-  let cands = CH.filter(c => (loose || c.r.indexOf(role) >= 0) && !used.has(c.n));
+  const base = pool ? CH.filter(c => pool.has(c.n)) : CH;
+  let cands = base.filter(c => (loose || c.r.indexOf(role) >= 0) && !used.has(c.n));
+  if (!cands.length) cands = base.filter(c => !used.has(c.n));
   if (!cands.length) cands = CH.filter(c => !used.has(c.n));
   const c = pick(cands);
   const b = genBuild(c);
   return { champ:c.n, role:role, dmg:c.d, items:b.items, theme:b.theme, spells:genSpells(role), runes:genRunes(c, role, L), skill:genSkill(), troll:L, off:false };
 }
 
-export function genOff(role, used){
-  let c = OFF.filter(e => e.role === role && !used.has(e.champ));
+export function genOff(role, used, pool){
+  const own = pool ? OFF.filter(e => pool.has(e.champ)) : OFF;
+  let c = own.filter(e => e.role === role && !used.has(e.champ));
+  if (!c.length) c = own.filter(e => !used.has(e.champ));
+  if (!c.length) c = OFF.filter(e => e.role === role && !used.has(e.champ));
   if (!c.length) c = OFF.filter(e => !used.has(e.champ));
   const e = pick(c);
   const ch = CHBY[e.champ];
   return { champ:e.champ, role:e.role, dmg:ch ? ch.d : "h", items:e.items, theme:{ n:e.title, d:e.note }, spells:e.spells, runes:genRunes(ch, e.role, 0, e.ks), skill:"", src:e.src, url:e.url, troll:0, off:true };
 }
 
-export function gen(role, used){ return S.mode === "off" ? genOff(role, used) : genTroll(role, used); }
+export function gen(role, used, pool){ return S.mode === "off" ? genOff(role, used, pool) : genTroll(role, used, pool); }
 export function regenBuild(res){
   const c = CHBY[res.champ];
   const b = genBuild(c);
