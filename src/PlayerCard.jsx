@@ -201,7 +201,8 @@ export default function PlayerCard({ i, p, level, poolSize, onName, onRole, onLo
                   {champ?.title && <div className="ctitle">{champ.title}</div>}
                   <div className="tags">
                     <span className="tag">{DMGLAB[r.dmg]}</span>
-                    {r.off ? <span className="tag ok">Off meta</span> : <span className="tag hot">Troll <Meter l={r.troll} /></span>}
+                    <span className="tag ok">Off meta</span>
+                    {!r.off && <span className="tag hot">Troll <Meter l={r.troll} /></span>}
                   </div>
                 </div>
               </div>

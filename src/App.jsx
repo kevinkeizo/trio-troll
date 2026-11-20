@@ -238,7 +238,7 @@ function Main() {
             <div className="toggles">
               <label className="tog"><input type="checkbox" checked={cfg.distinct} onChange={(e) => { sfx.click(); setCfg((c) => ({ ...c, distinct: e.target.checked })); }} /> Roles diferentes</label>
               {L >= 1 && L <= 3 && (
-                <label className="tog"><input type="checkbox" checked={cfg.loose} onChange={(e) => { sfx.click(); setCfg((c) => ({ ...c, loose: e.target.checked })); }} /> Lane maluca</label>
+                <label className="tog"><input type="checkbox" checked={cfg.loose} onChange={(e) => { sfx.click(); setCfg((c) => ({ ...c, loose: e.target.checked })); }} /> Só rota que ele não joga</label>
               )}
             </div>
           </div>

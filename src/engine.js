@@ -209,11 +209,11 @@ export const SPELLKEYS = Object.keys(SP);
 // Níveis de troll. O 0 usa as picks off meta dos sites (modo "off").
 export const LEVELS = [
   {n:"Sério", d:"Picks off meta tiradas de sites. Build pronta e jogável."},
-  {n:"Leve", d:"Campeão na rota dele e build fora do comum que ainda funciona."},
-  {n:"Troll", d:"Build arriscada. Runa quase sempre combina."},
-  {n:"Pesado", d:"Qualquer tema de build, Mejai incluso. Runa já pode vir torta."},
-  {n:"Muito troll", d:"Campeão fora da rota, runa aleatória e às vezes build aleatória."},
-  {n:"Caos", d:"Rota, itens, runas e fragmentos às cegas. Só os feitiços continuam normais."}
+  {n:"Leve", d:"Campeão off meta em rota secundária dele. Build fora do comum que ainda funciona."},
+  {n:"Troll", d:"Off meta, às vezes em rota que o campeão nem joga. Build arriscada."},
+  {n:"Pesado", d:"Metade das vezes em rota que ele não joga. Mejai incluso, runa pode vir torta."},
+  {n:"Muito troll", d:"Sempre em rota que o campeão não joga. Runa aleatória e às vezes build aleatória."},
+  {n:"Caos", d:"Tudo às cegas, até os feitiços."}
 ];
 
 // Runas: o engine sorteia uma "receita" e o ddragon.jsx resolve nomes e ícones com os dados da Riot.
@@ -375,8 +375,12 @@ export function genBuild(c){
   return { items, theme:{ n:t.n, d:t.d }, ks:t.ks || null };
 }
 
-// Feitiços nunca trollam: Flash + o segundo que faz sentido pra rota, em qualquer nível.
+// Feitiços só trollam no nível 5. Nos outros: Flash + o segundo que faz sentido pra rota.
 export function genSpells(role){
+  if (S.level >= 5){
+    if (role === "J") return ["smite", pick(SPELLKEYS.filter(k => k !== "smite"))];
+    return shuffle(SPELLKEYS.filter(k => k !== "smite")).slice(0, 2);
+  }
   if (role === "J") return ["smite", Math.random()<0.88 ? "flash" : "ghost"];
   const base = {
     T:[["tp",5],["ignite",3],["ghost",2],["barrier",1],["cleanse",1]],
@@ -391,11 +395,16 @@ export function genSpells(role){
 // se nem assim sobrar ninguém, usa a lista inteira.
 export function genTroll(role, used, pool){
   const L = S.level;
-  const loose = L >= 4 || S.loose;
-  const base = pool ? CH.filter(c => pool.has(c.n)) : CH;
-  let cands = base.filter(c => (loose || c.r.indexOf(role) >= 0) && !used.has(c.n));
-  if (!cands.length) cands = base.filter(c => !used.has(c.n));
-  if (!cands.length) cands = CH.filter(c => !used.has(c.n));
+  // Sempre off meta: o campeão nunca cai na rota principal dele.
+  // "alt" = rota secundária conhecida ou pick off meta dos sites (estranho mas jogável).
+  // "fora" = rota que o campeão não joga. Quanto maior o nível, mais "fora".
+  const base = (pool ? CH.filter(c => pool.has(c.n)) : CH).filter(c => !used.has(c.n));
+  const offPick = new Set(OFF.filter(e => e.role === role).map(e => e.champ));
+  const alt = base.filter(c => c.r[0] !== role && (c.r.indexOf(role) > 0 || offPick.has(c.n)));
+  const fora = base.filter(c => c.r.indexOf(role) < 0);
+  const wantFora = L >= 4 || S.loose || Math.random() < ({1:0, 2:0.3, 3:0.5}[L] || 0) || (alt.length < 3 && Math.random() < 0.5);
+  let cands = wantFora ? (fora.length ? fora : alt) : (alt.length ? alt : fora);
+  if (!cands.length) cands = base.length ? base : CH.filter(c => !used.has(c.n));
   const c = pick(cands);
   const b = genBuild(c);
   return { champ:c.n, role:role, dmg:c.d, items:b.items, theme:b.theme, spells:genSpells(role), runes:genRunes(c, role, L, themeKs(b, L)), ks:b.ks, skill:genSkill(), troll:L, off:false };
