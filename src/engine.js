@@ -210,10 +210,10 @@ export const SPELLKEYS = Object.keys(SP);
 export const LEVELS = [
   {n:"Sério", d:"Picks off meta tiradas de sites. Build pronta e jogável."},
   {n:"Leve", d:"Campeão na rota dele e build fora do comum que ainda funciona."},
-  {n:"Troll", d:"Build arriscada e segundo feitiço no sorteio. Runa quase sempre combina."},
+  {n:"Troll", d:"Build arriscada. Runa quase sempre combina."},
   {n:"Pesado", d:"Qualquer tema de build, Mejai incluso. Runa já pode vir torta."},
-  {n:"Muito troll", d:"Campeão fora da rota, feitiços sem Flash garantido e às vezes build aleatória."},
-  {n:"Caos", d:"Tudo às cegas: rota, itens, feitiços, runas e fragmentos."}
+  {n:"Muito troll", d:"Campeão fora da rota, runa aleatória e às vezes build aleatória."},
+  {n:"Caos", d:"Rota, itens, runas e fragmentos às cegas. Só os feitiços continuam normais."}
 ];
 
 // Runas: o engine sorteia uma "receita" e o ddragon.jsx resolve nomes e ícones com os dados da Riot.
@@ -375,21 +375,16 @@ export function genBuild(c){
   return { items, theme:{ n:t.n, d:t.d }, ks:t.ks || null };
 }
 
+// Feitiços nunca trollam: Flash + o segundo que faz sentido pra rota, em qualquer nível.
 export function genSpells(role){
-  const L = S.level;
-  if (role === "J") return ["smite", L>=4 ? pick(["flash","ghost","tp","heal","barrier","cleanse","exhaust","ignite"]) : (Math.random()<0.88 ? "flash" : "ghost")];
-  if (L >= 4){
-    const pool = SPELLKEYS.filter(k => k!=="smite");
-    return shuffle(pool).slice(0,2);
-  }
+  if (role === "J") return ["smite", Math.random()<0.88 ? "flash" : "ghost"];
   const base = {
     T:[["tp",5],["ignite",3],["ghost",2],["barrier",1],["cleanse",1]],
     M:[["ignite",4],["tp",3],["barrier",1],["cleanse",1],["ghost",1]],
     A:[["heal",5],["barrier",2],["cleanse",2],["ignite",2],["exhaust",1]],
     S:[["exhaust",4],["ignite",4],["heal",2],["barrier",1],["cleanse",1]]
   };
-  const second = L === 1 ? wpick(base[role]) : pick(SPELLKEYS.filter(k => k!=="smite" && k!=="flash"));
-  return ["flash", second];
+  return ["flash", wpick(base[role])];
 }
 
 // pool: Set com os campeões do jogador (ou null = todos). Se o pool não tiver ninguém pra rota, ignora a rota;
