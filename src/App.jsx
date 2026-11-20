@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   S, ROLEKEYS, ROLE, SP, CHALLENGES, LEVELS, SHARDS, CHBY,
-  gen, genSpells, genRunes, regenBuild, shuffle, pick,
+  gen, genSpells, genRunes, regenBuild, themeKs, shuffle, pick,
 } from "./engine.js";
 import { DataDragonProvider, useDD } from "./ddragon.jsx";
 import PlayerCard from "./PlayerCard.jsx";
@@ -73,7 +73,7 @@ function Main() {
   const dd = useDD();
   const [cfg, setCfg] = useState(() => {
     const s = store.get("trio-cfg", {});
-    const level = Number.isInteger(s.level) && s.level >= 0 && s.level <= 3 ? s.level : 2;
+    const level = Number.isInteger(s.level) && s.level >= 0 && s.level <= 5 ? s.level : 2;
     return { level, distinct: s.distinct !== false, loose: !!s.loose };
   });
   const [players, setPlayers] = useState(() =>
@@ -157,7 +157,7 @@ function Main() {
     if (part === "build") {
       const res = { ...p.res }; regenBuild(res); patch(i, (q) => ({ ...q, res }));
     } else if (part === "runes") {
-      patch(i, (q) => ({ ...q, res: { ...q.res, runes: genRunes(CHBY[q.res.champ], q.res.role, L) } }));
+      patch(i, (q) => ({ ...q, res: { ...q.res, runes: genRunes(CHBY[q.res.champ], q.res.role, L, themeKs(q.res, L)) } }));
     } else {
       patch(i, (q) => ({ ...q, res: { ...q.res, spells: genSpells(q.res.role) } }));
     }
@@ -231,13 +231,13 @@ function Main() {
         <div className="in controls">
           <div className="grp"><span className="lab">Nível de troll</span>
             <Seg value={L} onChange={setLevel}
-              options={[[0, "0 Sério"], [1, "1 Leve"], [2, "2 Troll"], [3, "3 Caos"]]} />
+              options={LEVELS.map((l, k) => [k, `${k} ${l.n}`])} />
             <span className="lvdesc">{LEVELS[L].d}</span>
           </div>
           <div className="grp"><span className="lab">Regras</span>
             <div className="toggles">
               <label className="tog"><input type="checkbox" checked={cfg.distinct} onChange={(e) => { sfx.click(); setCfg((c) => ({ ...c, distinct: e.target.checked })); }} /> Roles diferentes</label>
-              {(L === 1 || L === 2) && (
+              {L >= 1 && L <= 3 && (
                 <label className="tog"><input type="checkbox" checked={cfg.loose} onChange={(e) => { sfx.click(); setCfg((c) => ({ ...c, loose: e.target.checked })); }} /> Lane maluca</label>
               )}
             </div>

@@ -109,8 +109,8 @@ function Runes({ spec }) {
 }
 
 const Meter = ({ l }) => (
-  <span className="meter" title={`Nível de troll ${l} de 3`}>
-    {[1, 2, 3].map((i) => <i key={i} className={i <= l ? "f" : ""} />)}
+  <span className="meter" title={`Nível de troll ${l} de 5`}>
+    {[1, 2, 3, 4, 5].map((i) => <i key={i} className={i <= l ? "f" : ""} />)}
   </span>
 );
 

@@ -101,10 +101,10 @@ export const sfx = {
   },
   level: (n = 0) => {
     const c = ac(); if (!c) return;
-    const f = [330, 392, 494, 587][n] || 440;
+    const f = [330, 392, 440, 494, 587, 659][n] || 440;
     tone(c, { f, type: "triangle", dur: 0.14, vol: 0.1 });
     tone(c, { f: f * 1.5, type: "triangle", dur: 0.12, vol: 0.06, at: 0.05 });
-    if (n === 3) {
+    if (n >= 4) {
       tone(c, { f: 90, to: 55, type: "sawtooth", dur: 0.35, vol: 0.07, at: 0.02 });
       noise(c, { dur: 0.25, vol: 0.1, freq: 900, q: 0.7, at: 0.02 });
     }
