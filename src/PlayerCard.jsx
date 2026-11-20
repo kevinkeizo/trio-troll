@@ -125,7 +125,7 @@ export default function PlayerCard({ i, p, level, poolSize, onName, onRole, onLo
     const c = dd.champ(r.champ);
     if (c) { const im = new Image(); im.src = c.splash; }
     if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) { sfx.reveal(i); return undefined; }
-    const total = 900 + i * 350;
+    const total = 300 + i * 150; // trio inteiro revela em 0,6s (antes 1,6s)
     const start = performance.now();
     let timer;
     const step = () => {
@@ -134,7 +134,7 @@ export default function PlayerCard({ i, p, level, poolSize, onName, onRole, onLo
       setSpin(CH[Math.floor(Math.random() * CH.length)].n);
       sfx.tick();
       const k = el / total;
-      timer = setTimeout(step, 50 + k * k * 170);
+      timer = setTimeout(step, 35 + k * k * 110);
     };
     step();
     return () => { clearTimeout(timer); setSpin(null); };
